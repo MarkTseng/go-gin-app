@@ -2,44 +2,99 @@
 
 package main
 
-import "errors"
+import (
+	"errors"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	//"log"
+)
 
+/*
 type article struct {
-	ID      int    `json:"id"`
+	Id      int    `json:"id"`
 	Title   string `json:"title"`
-	Content string `json:"content"`
+	Body string `json:"content"`
+}
+*/
+
+// Article model
+type article struct {
+	Id        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
+	Title     string        `json:"title" form:"title" binding:"required" bson:"title"`
+	Body      string        `json:"body" form:"body" binding:"required" bson:"body"`
+	CreatedOn int64         `json:"created_on" bson:"created_on"`
+	UpdatedOn int64         `json:"updated_on" bson:"updated_on"`
 }
 
 // For this demo, we're storing the article list in memory
 // In a real application, this list will most likely be fetched
 // from a database or from static files
+/*
 var articleList = []article{
-	article{ID: 1, Title: "Article 1", Content: "Article 1 body"},
-	article{ID: 2, Title: "Article 2", Content: "Article 2 body"},
+	article{Id: bson.ObjectId("1"), Title: "Article 1", Body: "Article 1 body"},
+	article{Id: bson.ObjectId("2"), Title: "Article 2", Body: "Article 2 body"},
 }
-
+*/
 // Return a list of all the articles
 func getAllArticles() []article {
-	return articleList
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("articles")
+	var results []article
+	err = c.Find(nil).Sort("-timestamp").All(&results)
+
+	return results
+	//return articleList
 }
 
-// Fetch an article based on the ID supplied
-func getArticleByID(id int) (*article, error) {
-	for _, a := range articleList {
-		if a.ID == id {
-			return &a, nil
+// Fetch an article based on the Id supplied
+func getArticleByID(id string) (*article, error) {
+	/*
+		for _, a := range articleList {
+			if a.Id == bson.ObjectId(id) {
+				return &a, nil
+			}
 		}
+	*/
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
 	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("articles")
+	result := article{}
+	err = c.Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&result)
+	//log.Print(result)
+	if result.Id.Hex() == id {
+		return &result, nil
+	}
+
 	return nil, errors.New("Article not found")
 }
 
 // Create a new article with the title and content provided
 func createNewArticle(title, content string) (*article, error) {
-	// Set the ID of a new article to one more than the number of articles
-	a := article{ID: len(articleList) + 1, Title: title, Content: content}
+	// Set the Id of a new article to one more than the number of articles
+	a := article{Title: title, Body: content}
 
 	// Add the article to the list of articles
-	articleList = append(articleList, a)
+	// articleList = append(articleList, a)
 
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("articles")
+	err = c.Insert(&a)
 	return &a, nil
 }

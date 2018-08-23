@@ -3,10 +3,9 @@
 package main
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
+	//"log"
+	"net/http"
 )
 
 func showIndexPage(c *gin.Context) {
@@ -26,9 +25,11 @@ func showArticleCreationPage(c *gin.Context) {
 
 func getArticle(c *gin.Context) {
 	// Check if the article ID is valid
-	if articleID, err := strconv.Atoi(c.Param("article_id")); err == nil {
+	//log.Print(c.Param("article_id"))
+	//if articleID, err := strconv.Atoi(c.Param("article_id")); err == nil {
+	if true {
 		// Check if the article exists
-		if article, err := getArticleByID(articleID); err == nil {
+		if article, err := getArticleByID(c.Param("article_id")); err == nil {
 			// Call the render function with the title, article and the name of the
 			// template
 			render(c, gin.H{

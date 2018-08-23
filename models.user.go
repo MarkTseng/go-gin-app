@@ -4,32 +4,36 @@ package main
 
 import (
 	"errors"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
 )
 
-type user struct {
-	Username string `json:"username"`
-	Password string `json:"-"`
-}
+const (
+	MongoDBUrl = "mongodb://localhost:27017/articles_demo_dev"
+)
 
-// For this demo, we're storing the user list in memory
-// We also have some users predefined.
-// In a real application, this list will most likely be fetched
-// from a database. Moreover, in production settings, you should
-// store passwords securely by salting and hashing them instead
-// of using them as we're doing in this demo
-var userList = []user{
-	user{Username: "user1", Password: "pass1"},
-	user{Username: "user2", Password: "pass2"},
-	user{Username: "user3", Password: "pass3"},
+type user struct {
+	Id       bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
+	Username string        `json:"username" form:"username" binding:"required" bson:"username"`
+	Password string        `json:"password" form:"password" binding:"required" bson:"password"`
 }
 
 // Check if the username and password combination is valid
 func isUserValid(username, password string) bool {
-	for _, u := range userList {
-		if u.Username == username && u.Password == password {
-			return true
-		}
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("users")
+	result := user{}
+	err = c.Find(bson.M{"username": username}).One(&result)
+
+	if result.Username == username && result.Password == password {
+		return true
 	}
 	return false
 }
@@ -45,17 +49,34 @@ func registerNewUser(username, password string) (*user, error) {
 
 	u := user{Username: username, Password: password}
 
-	userList = append(userList, u)
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("users")
+	err = c.Insert(&u)
 
 	return &u, nil
 }
 
 // Check if the supplied username is available
 func isUsernameAvailable(username string) bool {
-	for _, u := range userList {
-		if u.Username == username {
-			return false
-		}
+	session, err := mgo.Dial(MongoDBUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("articles_demo_dev").C("users")
+	result := user{}
+	err = c.Find(bson.M{"username": username}).One(&result)
+
+	if result.Username == username {
+		return false
 	}
 	return true
 }
