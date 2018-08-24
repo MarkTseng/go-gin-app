@@ -4,6 +4,7 @@ package main
 
 import (
 	"errors"
+	"github.com/night-codes/mgo-ai"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	//"log"
@@ -19,11 +20,12 @@ type article struct {
 
 // Article model
 type article struct {
-	Id        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
-	Title     string        `json:"title" form:"title" binding:"required" bson:"title"`
-	Body      string        `json:"body" form:"body" binding:"required" bson:"body"`
-	CreatedOn int64         `json:"created_on" bson:"created_on"`
-	UpdatedOn int64         `json:"updated_on" bson:"updated_on"`
+	//Id        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
+	Id        uint64 `json:"_id,omitempty" bson:"_id,omitempty"`
+	Title     string `json:"title" form:"title" binding:"required" bson:"title"`
+	Body      string `json:"body" form:"body" binding:"required" bson:"body"`
+	CreatedOn int64  `json:"created_on" bson:"created_on"`
+	UpdatedOn int64  `json:"updated_on" bson:"updated_on"`
 }
 
 // For this demo, we're storing the article list in memory
@@ -53,7 +55,7 @@ func getAllArticles() []article {
 }
 
 // Fetch an article based on the Id supplied
-func getArticleByID(id string) (*article, error) {
+func getArticleByID(id uint64) (*article, error) {
 	/*
 		for _, a := range articleList {
 			if a.Id == bson.ObjectId(id) {
@@ -70,9 +72,9 @@ func getArticleByID(id string) (*article, error) {
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB("articles_demo_dev").C("articles")
 	result := article{}
-	err = c.Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&result)
+	err = c.Find(bson.M{"_id": id}).One(&result)
 	//log.Print(result)
-	if result.Id.Hex() == id {
+	if result.Id == id {
 		return &result, nil
 	}
 
@@ -82,11 +84,12 @@ func getArticleByID(id string) (*article, error) {
 // Create a new article with the title and content provided
 func createNewArticle(title, content string) (*article, error) {
 	// Set the Id of a new article to one more than the number of articles
-	a := article{Title: title, Body: content}
+	//a := article{Title: title, Body: content}
 
 	// Add the article to the list of articles
 	// articleList = append(articleList, a)
 
+	//log.Print("createNewArticle")
 	session, err := mgo.Dial(MongoDBUrl)
 	if err != nil {
 		panic(err)
@@ -94,7 +97,13 @@ func createNewArticle(title, content string) (*article, error) {
 
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
+	// connect AutoIncrement to collection "counters"
+	ai.Connect(session.DB("articles_demo_dev").C("counters"))
 	c := session.DB("articles_demo_dev").C("articles")
-	err = c.Insert(&a)
+
+	aId := ai.Next("articles")
+	a := article{Title: title, Body: content, Id: aId}
+	err = c.Insert(bson.M{"_id": aId, "title": title, "body": content})
+	//log.Print(aId)
 	return &a, nil
 }
