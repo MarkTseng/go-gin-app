@@ -11,6 +11,9 @@ func initializeRoutes() {
 	// Handle the index route
 	router.GET("/", showIndexPage)
 
+	// Handle static file
+	router.Static("/css", "static/css")
+
 	// Group user related routes together
 	userRoutes := router.Group("/u")
 	{
