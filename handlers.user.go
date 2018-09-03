@@ -3,11 +3,11 @@
 package main
 
 import (
-	"math/rand"
+	//"math/rand"
 	"net/http"
-	"strconv"
-
+	//"strconv"
 	"github.com/gin-gonic/gin"
+	"github.com/pborman/uuid"
 )
 
 func showLoginPage(c *gin.Context) {
@@ -45,7 +45,8 @@ func generateSessionToken() string {
 	// We're using a random 16 character string as the session token
 	// This is NOT a secure way of generating session tokens
 	// DO NOT USE THIS IN PRODUCTION
-	return strconv.FormatInt(rand.Int63(), 16)
+	//return strconv.FormatInt(rand.Int63(), 16)
+	return uuid.New()
 }
 
 func logout(c *gin.Context) {
