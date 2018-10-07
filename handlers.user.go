@@ -6,8 +6,10 @@ import (
 	//"math/rand"
 	"net/http"
 	//"strconv"
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/pborman/uuid"
+	//"log"
 )
 
 func showLoginPage(c *gin.Context) {
@@ -28,6 +30,13 @@ func performLogin(c *gin.Context) {
 		token := generateSessionToken()
 		c.SetCookie("token", token, 3600, "", "", false, true)
 		c.Set("is_logged_in", true)
+
+		// save username in session
+		session := sessions.Default(c)
+		session.Set("username", username)
+		session.Save()
+
+		//log.Printf("username %s\n", username)
 
 		render(c, gin.H{
 			"title": "Successful Login"}, "login-successful.html")
@@ -52,7 +61,13 @@ func generateSessionToken() string {
 func logout(c *gin.Context) {
 	// Clear the cookie
 	c.SetCookie("token", "", -1, "", "", false, true)
-
+	session := sessions.Default(c)
+	username := session.Get("username")
+	if username != nil {
+		//log.Printf("delete %s\n", username)
+		session.Delete("username")
+		session.Save()
+	}
 	// Redirect to the home page
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
@@ -73,6 +88,13 @@ func register(c *gin.Context) {
 		token := generateSessionToken()
 		c.SetCookie("token", token, 3600, "", "", false, true)
 		c.Set("is_logged_in", true)
+
+		// save username in session
+		session := sessions.Default(c)
+		session.Set("username", username)
+		session.Save()
+
+		//log.Printf("username %s\n", username)
 
 		render(c, gin.H{
 			"title": "Successful registration & Login"}, "login-successful.html")

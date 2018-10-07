@@ -3,6 +3,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	//"log"
 	"net/http"
@@ -52,7 +53,12 @@ func createArticle(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 
-	if a, err := createNewArticle(title, content); err == nil {
+	// get username in session
+	session := sessions.Default(c)
+	username := session.Get("username")
+	//log.Printf("createArticle username %s\n", username)
+
+	if a, err := createNewArticle(title, content, username.(string)); err == nil {
 		// If the article is created successfully, show success message
 		render(c, gin.H{
 			"title":   "Submission Successful",

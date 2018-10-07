@@ -82,14 +82,14 @@ func getArticleByID(id uint64) (*article, error) {
 }
 
 // Create a new article with the title and content provided
-func createNewArticle(title, content string) (*article, error) {
+func createNewArticle(title, content, username string) (*article, error) {
 	// Set the Id of a new article to one more than the number of articles
 	//a := article{Title: title, Body: content}
 
 	// Add the article to the list of articles
 	// articleList = append(articleList, a)
 
-	//log.Print("createNewArticle")
+	//log.Printf("createNewArticle: %s\n", username)
 	session, err := mgo.Dial(MongoDBUrl)
 	if err != nil {
 		panic(err)

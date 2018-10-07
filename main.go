@@ -5,6 +5,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +17,10 @@ func main() {
 
 	// Set the router as the default one provided by Gin
 	router = gin.Default()
+
+	// Set sessions for keeping user info
+	store := sessions.NewCookieStore([]byte("secret"))
+	router.Use(sessions.Sessions("mysession", store))
 
 	// Process the templates at the start so that they don't have to be loaded
 	// from the disk again. This makes serving HTML pages very fast.
