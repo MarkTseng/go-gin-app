@@ -5,7 +5,7 @@ package main
 import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	//"log"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -59,6 +59,51 @@ func createArticle(c *gin.Context) {
 	//log.Printf("createArticle username %s\n", username)
 
 	if a, err := createNewArticle(title, content, username.(string)); err == nil {
+		// If the article is created successfully, show success message
+		render(c, gin.H{
+			"title":   "Submission Successful",
+			"payload": a}, "submission-successful.html")
+	} else {
+		// if there was an error while creating the article, abort with an error
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+}
+
+func deleteArticle(c *gin.Context) {
+	id := c.Param("id")
+	log.Printf("deleteArticle id: %s\n", id)
+
+	// get username in session
+	session := sessions.Default(c)
+	username := session.Get("username")
+	//log.Printf("createArticle username %s\n", username)
+
+	if err := deleteOldArticle(id, username.(string)); err == nil {
+		// If the article is delete successfully, show success message
+		render(c, gin.H{
+			"title": "Submission Successful",
+		}, "submission-delete-successful.html")
+	} else {
+		// if there was an error while creating the article, abort with an error
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+}
+
+func updateArticle(c *gin.Context) {
+	// Obtain the POSTed title and content values
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+	id := c.PostForm("id")
+
+	log.Printf("updateArticle id %s\n", id)
+	log.Printf("updateArticle title %s\n", title)
+
+	// get username in session
+	session := sessions.Default(c)
+	username := session.Get("username")
+	//log.Printf("createArticle username %s\n", username)
+
+	if a, err := updateOldArticle(id, title, content, username.(string)); err == nil {
 		// If the article is created successfully, show success message
 		render(c, gin.H{
 			"title":   "Submission Successful",

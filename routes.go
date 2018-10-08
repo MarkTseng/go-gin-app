@@ -57,5 +57,14 @@ func initializeRoutes() {
 		// Handle POST requests at /article/create
 		// Ensure that the user is logged in by using the middleware
 		articleRoutes.POST("/create", ensureLoggedIn(), createArticle)
+
+		// Handle POST requests at /article/update
+		// Ensure that the user is logged in by using the middleware
+		articleRoutes.POST("/update", ensureLoggedIn(), updateArticle)
+
+		// Handle the GET requests at /article/delete/:id
+		// delete article
+		// Ensure that the user is logged in by using the middleware
+		articleRoutes.GET("/delete/:id", ensureLoggedIn(), deleteArticle)
 	}
 }
