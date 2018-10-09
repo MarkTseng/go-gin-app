@@ -58,15 +58,21 @@ func createArticle(c *gin.Context) {
 	username := session.Get("username")
 	//log.Printf("createArticle username %s\n", username)
 
-	if a, err := createNewArticle(title, content, username.(string)); err == nil {
-		// If the article is created successfully, show success message
-		render(c, gin.H{
-			"title":   "Submission Successful",
-			"payload": a}, "submission-successful.html")
+	if username != nil {
+		if a, err := createNewArticle(title, content, username.(string)); err == nil {
+			// If the article is created successfully, show success message
+			render(c, gin.H{
+				"title":   "Submission Successful",
+				"payload": a}, "submission-successful.html")
+		} else {
+			// if there was an error while creating the article, abort with an error
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
 	} else {
 		// if there was an error while creating the article, abort with an error
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
+
 }
 
 func deleteArticle(c *gin.Context) {
@@ -76,17 +82,23 @@ func deleteArticle(c *gin.Context) {
 	// get username in session
 	session := sessions.Default(c)
 	username := session.Get("username")
-	//log.Printf("createArticle username %s\n", username)
+	log.Printf("deleteArticle username %s\n", username)
 
-	if err := deleteOldArticle(id, username.(string)); err == nil {
-		// If the article is delete successfully, show success message
-		render(c, gin.H{
-			"title": "Submission Successful",
-		}, "submission-delete-successful.html")
+	if username != nil {
+		if err := deleteOldArticle(id, username.(string)); err == nil {
+			// If the article is delete successfully, show success message
+			render(c, gin.H{
+				"title": "Submission Successful",
+			}, "submission-delete-successful.html")
+		} else {
+			// if there was an error while creating the article, abort with an error
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
 	} else {
 		// if there was an error while creating the article, abort with an error
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
+
 }
 
 func updateArticle(c *gin.Context) {
@@ -103,11 +115,16 @@ func updateArticle(c *gin.Context) {
 	username := session.Get("username")
 	//log.Printf("createArticle username %s\n", username)
 
-	if a, err := updateOldArticle(id, title, content, username.(string)); err == nil {
-		// If the article is created successfully, show success message
-		render(c, gin.H{
-			"title":   "Submission Successful",
-			"payload": a}, "submission-successful.html")
+	if username != nil {
+		if a, err := updateOldArticle(id, title, content, username.(string)); err == nil {
+			// If the article is created successfully, show success message
+			render(c, gin.H{
+				"title":   "Submission Successful",
+				"payload": a}, "submission-successful.html")
+		} else {
+			// if there was an error while creating the article, abort with an error
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
 	} else {
 		// if there was an error while creating the article, abort with an error
 		c.AbortWithStatus(http.StatusBadRequest)
