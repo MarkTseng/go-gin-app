@@ -5,7 +5,7 @@ package main
 import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"log"
+	//"log"
 	"net/http"
 	"strconv"
 )
@@ -77,12 +77,12 @@ func createArticle(c *gin.Context) {
 
 func deleteArticle(c *gin.Context) {
 	id := c.Param("id")
-	log.Printf("deleteArticle id: %s\n", id)
+	//log.Printf("deleteArticle id: %s\n", id)
 
 	// get username in session
 	session := sessions.Default(c)
 	username := session.Get("username")
-	log.Printf("deleteArticle username %s\n", username)
+	//log.Printf("deleteArticle username %s\n", username)
 
 	if username != nil {
 		if err := deleteOldArticle(id, username.(string)); err == nil {
@@ -107,8 +107,8 @@ func updateArticle(c *gin.Context) {
 	content := c.PostForm("content")
 	id := c.PostForm("id")
 
-	log.Printf("updateArticle id %s\n", id)
-	log.Printf("updateArticle title %s\n", title)
+	//log.Printf("updateArticle id %s\n", id)
+	//log.Printf("updateArticle title %s\n", title)
 
 	// get username in session
 	session := sessions.Default(c)
